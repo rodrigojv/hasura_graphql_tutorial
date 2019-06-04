@@ -12,7 +12,7 @@ import { ApolloProvider } from "react-apollo";
 const createApolloClient = authToken => {
   return new ApolloClient({
     link: new HttpLink({
-      uri: "https://learn.hasura.io./grqphql",
+      uri: "https://learn.hasura.io/graphql",
       headers: {
         Authorization: `Bearer ${authToken}`
       }
