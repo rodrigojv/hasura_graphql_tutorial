@@ -64,7 +64,7 @@ class TodoPrivateList extends Component {
         todo => todo.is_completed !== true
       );
     } else if (this.state.filter === "completed") {
-      filteredTodos = this.state.props.filter(
+      filteredTodos = this.props.todos.filter(
         todo => todo.is_completed === true
       );
     }
