@@ -18,6 +18,16 @@ const GET_MY_TODOS = gql`
   }
 `;
 
+const CLEAR_COMPLETED = gql`
+  mutation clearCompleted {
+    delete_todos(
+      where: { is_completed: { _eq: true }, is_public: { _eq: false } }
+    ) {
+      affected_rows
+    }
+  }
+`;
+
 const TodoPrivateListQuery = () => {
   return (
     <Query query={GET_MY_TODOS}>
@@ -55,7 +65,17 @@ class TodoPrivateList extends Component {
     });
   }
 
-  clearCompleted() {}
+  clearCompleted() {
+    this.props.client.mutate({
+      mutation: CLEAR_COMPLETED,
+      optimisticResponse: {},
+      update: cache => {
+        const existingTodos = cache.readQuery({ query: GET_MY_TODOS });
+        const newTodos = existingTodos.todos.filter(todo => !todo.is_completed);
+        cache.writeQuery({ query: GET_MY_TODOS, data: { todos: newTodos } });
+      }
+    });
+  }
 
   render() {
     let filteredTodos = this.props.todos;
