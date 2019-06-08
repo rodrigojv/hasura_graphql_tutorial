@@ -6,15 +6,20 @@ import TodoPublicWrapper from "./Todo/TodoPublicWrapper";
 import OnlineUsersWrapper from "./OnlineUsers/OnlineUsersWrapper";
 import ApolloClient from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
-import { HttpLink } from "apollo-link-http";
+import { WebSocketLink } from "apollo-link-ws";
 import { ApolloProvider } from "react-apollo";
 
 const createApolloClient = authToken => {
   return new ApolloClient({
-    link: new HttpLink({
-      uri: "https://learn.hasura.io/graphql",
-      headers: {
-        Authorization: `Bearer ${authToken}`
+    link: new WebSocketLink({
+      uri: "wss://learn.hasura.io/graphql",
+      options: {
+        reconnect: true,
+        connectionParams: {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        }
       }
     }),
     cache: new InMemoryCache()
