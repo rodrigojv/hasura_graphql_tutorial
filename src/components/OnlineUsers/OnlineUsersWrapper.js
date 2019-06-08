@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { withApollo } from "react-apollo";
+import React, { Component, Fragment } from "react";
+import { withApollo, Subscription } from "react-apollo";
 import OnlineUser from "./OnlineUser";
 import gql from "graphql-tag";
 
@@ -16,10 +16,6 @@ class OnlineUsersWrapper extends Component {
     super(props);
 
     this.client = props.client;
-
-    this.state = {
-      onlineUsers: [{ name: "someUser1" }, { name: "someUser2" }]
-    };
   }
 
   updateLastSeen() {
@@ -34,20 +30,49 @@ class OnlineUsersWrapper extends Component {
   }
 
   render() {
-    const onlineUsersList = [];
-    this.state.onlineUsers.forEach((user, index) => {
-      onlineUsersList.push(
-        <OnlineUser key={index} index={index} user={user} />
-      );
-    });
-
     return (
       <div className="onlineUsersWrapper">
-        <div className="sliderHeader">
-          Online users - {this.state.onlineUsers.length}
-        </div>
+        <Subscription
+          subscription={gql`
+            subscription getOnlineUsers {
+              online_users(order_by: { user: { name: asc } }) {
+                id
+                user {
+                  name
+                }
+              }
+            }
+          `}
+        >
+          {({ loading, error, data }) => {
+            if (loading) {
+              return <span>Loading...</span>;
+            }
+            if (error) {
+              console.log(error);
+              return <span>Error!</span>;
+            }
+            if (!data) {
+              return null;
+            }
+            const users = data.online_users;
+            const onlineUsersList = [];
+            users.forEach((u, index) => {
+              onlineUsersList.push(
+                <OnlineUser key={index} index={index} user={u.user} />
+              );
+            });
+            return (
+              <Fragment>
+                <div className="sliderHeader">
+                  Online users - {users.length}
+                </div>
 
-        {onlineUsersList}
+                {onlineUsersList}
+              </Fragment>
+            );
+          }}
+        </Subscription>
       </div>
     );
   }
